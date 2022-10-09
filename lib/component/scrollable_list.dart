@@ -25,7 +25,7 @@ class _ScrollableListState extends State<ScrollableList> {
           Explore(),
           Product(),
           Premium(),
-          Footer()
+          Footer(),
         ],
       ),
     );
