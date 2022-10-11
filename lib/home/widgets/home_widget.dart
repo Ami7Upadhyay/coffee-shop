@@ -14,14 +14,75 @@ class HomeWidget extends StatefulWidget {
   State<HomeWidget> createState() => _HomeWidgetState();
 }
 
-class _HomeWidgetState extends State<HomeWidget> {
+class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
   double width = 0;
   double height = 0;
   double imageHeight = 100;
   double imageWidth = 100;
+  late AnimationController animationController;
+  Animation<Offset>? animationOffset;
+  Animation<Offset>? animationOffset1;
+  Animation<double>? exploreAnimation;
+  Animation<Offset>? textAnimationOffset;
+  Animation<Offset>? textAnimationOffset1;
+  Animation<Offset>? textAnimationOffset2;
+  late AnimationController animationController2;
+  Animation<Offset>? exploreWidgetAnimation;
 
   @override
   void initState() {
+    animationController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 5));
+
+    animationController.forward();
+    animationOffset =
+        Tween<Offset>(begin: const Offset(-1, 0), end: const Offset(0, 0))
+            .animate(CurvedAnimation(
+                parent: animationController, curve: const Interval(0, 0.16)));
+    animationOffset1 =
+        Tween<Offset>(begin: const Offset(1, 0), end: const Offset(0, 0))
+            .animate(CurvedAnimation(
+                parent: animationController,
+                curve: const Interval(0.16, 0.32)));
+    exploreAnimation = Tween<double>(begin: 0, end: imageHeight).animate(
+        CurvedAnimation(
+            parent: animationController,
+            curve: const Interval(0.32, 0.48, curve: Curves.ease)));
+    textAnimationOffset =
+        Tween<Offset>(begin: const Offset(-5, 0), end: const Offset(0, 0))
+            .animate(CurvedAnimation(
+                parent: animationController,
+                curve: const Interval(0.48, 0.64, curve: Curves.decelerate)));
+    textAnimationOffset1 = Tween<Offset>(
+            begin: const Offset(-5, 0), end: const Offset(0, 0))
+        .animate(CurvedAnimation(
+            parent: animationController,
+            curve: const Interval(0.64, 0.8, curve: Curves.linearToEaseOut)));
+    textAnimationOffset2 = Tween<Offset>(
+            begin: const Offset(-5, 0), end: const Offset(0, 0))
+        .animate(CurvedAnimation(
+            parent: animationController,
+            curve:
+                const Interval(0.8, 1, curve: Curves.fastLinearToSlowEaseIn)));
+
+    animationController.addListener(() {
+      setState(() {});
+    });
+
+    animationController2 =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1));
+    exploreWidgetAnimation =
+        Tween<Offset>(begin: Offset.zero, end: const Offset(0, -0.2))
+            .animate(animationController2);
+    animationController2.forward();
+    animationController2.addStatusListener((status) {
+      if (AnimationStatus.completed == status) {
+        animationController2.reverse();
+      } else if (AnimationStatus.dismissed == status) {
+        animationController2.forward();
+      }
+    });
+
     super.initState();
   }
 
@@ -38,19 +99,27 @@ class _HomeWidgetState extends State<HomeWidget> {
                 Responsive.isMobile(context) ? Axis.vertical : Axis.horizontal,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(child: detailsAndDescription()),
-              Expanded(child: image()),
+              Expanded(
+                  child: SlideTransition(
+                      position: animationOffset!,
+                      child: detailsAndDescription())),
+              Expanded(
+                  child: SlideTransition(
+                      position: animationOffset1!, child: image())),
             ],
           ),
         ),
         Positioned(
-          top: (height / 2) - imageHeight / 2,
-          left: (width / 2) - imageWidth / 2,
-          child: CustomAssetImage(
-            imageName: 'scroll',
-            boxFit: BoxFit.contain,
-            height: imageHeight,
-            width: imageWidth,
+          top: (height / 2) - exploreAnimation!.value / 2,
+          left: (width / 2) - exploreAnimation!.value / 2,
+          child: SlideTransition(
+            position: exploreWidgetAnimation!,
+            child: CustomAssetImage(
+              imageName: 'scroll',
+              boxFit: BoxFit.contain,
+              height: exploreAnimation!.value,
+              width: exploreAnimation!.value,
+            ),
           ),
         )
       ],
@@ -69,20 +138,28 @@ class _HomeWidgetState extends State<HomeWidget> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const CustomText(
-            text: 'Choose Your Favourite Coffee And Enjoy.',
-            fontSize: 40,
+          SlideTransition(
+            position: textAnimationOffset!,
+            child: const CustomText(
+              text: 'Choose Your Favourite Coffee And Enjoy.',
+              fontSize: 40,
+            ),
           ),
           const SizedBox(height: 40),
-          const CustomText(
-            text: 'Buy the best and delicious coffee',
-            color: Colors.white60,
-            fontSize: 15,
+          SlideTransition(
+            position: textAnimationOffset1!,
+            child: const CustomText(
+              text: 'Buy the best and delicious coffee',
+              color: Colors.white60,
+              fontSize: 15,
+            ),
           ),
           const SizedBox(height: 40),
-          const Divider(color: Colors.grey),
+          SlideTransition(
+              position: textAnimationOffset2!,
+              child: const Divider(color: Colors.grey)),
           const SizedBox(height: 40),
-          details()
+          SlideTransition(position: textAnimationOffset2!, child: details())
         ],
       ),
     );
